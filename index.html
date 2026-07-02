@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Família Drack</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg: #0a0a0a;
+    --panel: #141414;
+    --panel-2: #1a1a1a;
+    --line: #3a1414;
+    --amber: #d81f27;
+    --amber-dim: #7a1015;
+    --text: #ececec;
+    --text-dim: #9a9a9a;
+    --green: #4f9a5c;
+    --red: #d81f27;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(180deg, rgba(20,23,26,0.97), rgba(20,23,26,0.99)),
+      repeating-linear-gradient(45deg, #1a1d20 0px, #1a1d20 2px, #191c1f 2px, #191c1f 4px);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    padding: 32px 16px 60px;
+  }
+
+  .wrap{ max-width: 900px; margin: 0 auto; }
+
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    border-bottom: 2px solid var(--amber-dim);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  h1{
+    font-family: 'Drack', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+  }
+  h1 span{ color: var(--amber); }
+
+  .subtitle{
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .toggle{
+    display:flex;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .toggle button{
+    font-family: 'Drack', sans-serif;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 10px 18px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .toggle button.active{
+    background: var(--amber);
+    color: #1a1200;
+    font-weight: 700;
+  }
+
+  .section-title{
+    font-family:'Drack', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin: 30px 0 10px;
+    padding-left: 10px;
+    border-left: 3px solid var(--amber);
+  }
+
+  .tabs{
+    display:flex;
+    gap: 6px;
+    margin-top: 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-btn{
+    font-family: 'Drack', sans-serif;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    color: var(--text-dim);
+    padding: 12px 26px;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    transition: all .15s;
+    position: relative;
+    top: 1px;
+  }
+  .tab-btn.active{
+    background: var(--panel-2);
+    color: #fff;
+    border-color: var(--amber-dim);
+    border-bottom: 1px solid var(--panel-2);
+  }
+  .tab-btn.active::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:-1px;
+    height:3px;
+    background: var(--amber);
+    border-radius: 4px 4px 0 0;
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  table{ width:100%; border-collapse: collapse; }
+
+  thead th{
+    text-align:left;
+    font-size:10px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color: var(--text-dim);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  thead th.num{ text-align:right; }
+
+  tbody tr{
+    border-bottom: 1px solid var(--line);
+  }
+  tbody tr:hover{ background: rgba(217,138,43,0.05); }
+
+  tbody td{ padding: 9px 10px; font-size: 13px; vertical-align: middle; }
+
+  .item-name{ font-weight: 500; color: #fff; }
+
+  .unit-price{ text-align:right; color: var(--text-dim); font-size: 12px; }
+
+  .qty-cell{ text-align:right; }
+  .qty-cell input{
+    width: 56px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 2px;
+  }
+  .qty-cell input:focus{
+    outline: none;
+    border-color: var(--amber);
+  }
+
+  .line-total{
+    text-align:right;
+    font-weight: 700;
+    color: var(--amber);
+    min-width: 100px;
+  }
+  .line-total.zero{ color: var(--text-dim); font-weight:400; }
+
+  .summary{
+    margin-top: 32px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 20px;
+  }
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    color: var(--text-dim);
+  }
+  .summary-row span.val{ color: var(--text); }
+  .summary-row.total{
+    border-top: 1px solid var(--line);
+    margin-top: 8px;
+    padding-top: 12px;
+    font-size: 20px;
+    color: #fff;
+    font-family: 'Drack', sans-serif;
+    letter-spacing: 1px;
+  }
+  .summary-row.total span.val{
+    color: var(--amber);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .savings{
+    text-align:right;
+    font-size: 11px;
+    color: var(--green);
+    margin-top: 6px;
+  }
+
+  .reset-btn{
+    display:block;
+    margin: 18px auto 0;
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: 'Drack', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 12px;
+    padding: 9px 22px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .reset-btn:hover{ background: var(--red); color: #fff; }
+
+  @media (max-width: 560px){
+    thead th:nth-child(2), .unit-price{ display:none; }
+    h1{ font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Calculadora <span>Família Drack</span></h1>
+      <div class="subtitle">Arsenal &amp; Munição — Depósito Tático</div>
+    </div>
+    <div class="toggle" id="modeToggle">
+      <button data-mode="com" class="active">Com parceria</button>
+      <button data-mode="sem">Sem parceria</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="sectionTabs">
+    <button class="tab-btn active" data-tab="armas">Armas</button>
+    <button class="tab-btn" data-tab="muni">Munição</button>
+  </div>
+
+  <div class="tab-panel active" id="panel-armas">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="num">Preço unit.</th>
+          <th class="num">Qtd</th>
+          <th class="num">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="armasBody"></tbody>
+    </table>
+  </div>
+
+  <div class="tab-panel" id="panel-muni">
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="num">Preço unit.</th>
+          <th class="num">Qtd</th>
+          <th class="num">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="muniBody"></tbody>
+    </table>
+  </div>
+
+  <div class="summary">
+    <div class="summary-row"><span>Subtotal armas</span><span class="val" id="sumArmas">R$ 0,00</span></div>
+    <div class="summary-row"><span>Subtotal munição</span><span class="val" id="sumMuni">R$ 0,00</span></div>
+    <div class="summary-row total"><span>Total geral</span><span class="val" id="sumTotal">R$ 0,00</span></div>
+    <div class="savings" id="savingsRow"></div>
+  </div>
+
+  <button class="reset-btn" id="resetBtn">Zerar quantidades</button>
+
+</div>
+
+<script>
+const armas = [
+  { name: "Five-Seven / Glock", com: 116910, sem: 129900 },
+  { name: "Tec-9",              com: 180765, sem: 200850 },
+  { name: "AK-47",              com: 258120, sem: 286800 },
+  { name: "Uzi",                com: 190890, sem: 212100 },
+  { name: "MP5",                com: 175770, sem: 195300 },
+  { name: "M4A1",               com: 194400, sem: 216000 },
+  { name: "M60",                com: 175770, sem: 195300 },
+  { name: "MTAR-21",            com: 218160, sem: 242400 },
+  { name: "G3-MK2",             com: 322650, sem: 358500 },
+  { name: "Remington",          com: 190890, sem: 212100 },
+  { name: "AKS",                com: 194400, sem: 216000 },
+  { name: "MPX",                com: 288900, sem: 321000 },
+  { name: "Parafal",            com: 387180, sem: 430200 }
+];
+
+const municao = [
+  { name: "Five-Seven / Glock", com: 526.5,  sem: 585 },
+  { name: "Tec-9",              com: 560.25, sem: 622.5 },
+  { name: "Uzi",                com: 560.25, sem: 622.5 },
+  { name: "AK-47",              com: 702,    sem: 780 },
+  { name: "MP5",                com: 560.25, sem: 622.5 },
+  { name: "M60",                com: 661.5,  sem: 735 },
+  { name: "MTAR-21",            com: 702,    sem: 780 },
+  { name: "G3-MK2",             com: 769.5,  sem: 855 },
+  { name: "Remington",          com: 702,    sem: 780 },
+  { name: "AKS",                com: 661.5,  sem: 735 },
+  { name: "M4A1",               com: 661.5,  sem: 735 },
+  { name: "MPX",                com: 702,    sem: 780 },
+  { name: "Parafal",            com: 769.5,  sem: 855 },
+  { name: "Sniper",             com: 20182.5,sem: 22425 }
+];
+
+let mode = "com";
+
+function fmt(n){
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function buildRows(list, tbodyId, prefix){
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = "";
+  list.forEach((item, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="item-name">${item.name}</td>
+      <td class="unit-price" id="${prefix}-price-${i}">${fmt(item[mode])}</td>
+      <td class="qty-cell"><input type="number" min="0" step="1" value="0" id="${prefix}-qty-${i}"></td>
+      <td class="line-total zero" id="${prefix}-total-${i}">${fmt(0)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function recalc(){
+  let sumArmas = 0, sumMuni = 0;
+
+  armas.forEach((item, i) => {
+    const qty = parseFloat(document.getElementById(`arma-qty-${i}`).value) || 0;
+    const price = item[mode];
+    const total = qty * price;
+    sumArmas += total;
+    const cell = document.getElementById(`arma-total-${i}`);
+    cell.textContent = fmt(total);
+    cell.classList.toggle("zero", total === 0);
+    document.getElementById(`arma-price-${i}`).textContent = fmt(price);
+  });
+
+  municao.forEach((item, i) => {
+    const qty = parseFloat(document.getElementById(`muni-qty-${i}`).value) || 0;
+    const price = item[mode];
+    const total = qty * price;
+    sumMuni += total;
+    const cell = document.getElementById(`muni-total-${i}`);
+    cell.textContent = fmt(total);
+    cell.classList.toggle("zero", total === 0);
+    document.getElementById(`muni-price-${i}`).textContent = fmt(price);
+  });
+
+  document.getElementById("sumArmas").textContent = fmt(sumArmas);
+  document.getElementById("sumMuni").textContent = fmt(sumMuni);
+  document.getElementById("sumTotal").textContent = fmt(sumArmas + sumMuni);
+
+  const savingsRow = document.getElementById("savingsRow");
+  if (mode === "com") {
+    let semArmas = 0, semMuni = 0;
+    armas.forEach((item, i) => {
+      const qty = parseFloat(document.getElementById(`arma-qty-${i}`).value) || 0;
+      semArmas += qty * item.sem;
+    });
+    municao.forEach((item, i) => {
+      const qty = parseFloat(document.getElementById(`muni-qty-${i}`).value) || 0;
+      semMuni += qty * item.sem;
+    });
+    const economia = (semArmas + semMuni) - (sumArmas + sumMuni);
+    savingsRow.textContent = economia > 0 ? `Economia com parceria: ${fmt(economia)}` : "";
+  } else {
+    savingsRow.textContent = "";
+  }
+}
+
+document.getElementById("sectionTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-tab]");
+  if (!btn) return;
+  document.querySelectorAll("#sectionTabs .tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+  document.getElementById("panel-armas").classList.toggle("active", btn.dataset.tab === "armas");
+  document.getElementById("panel-muni").classList.toggle("active", btn.dataset.tab === "muni");
+});
+
+document.getElementById("modeToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-mode]");
+  if (!btn) return;
+  mode = btn.dataset.mode;
+  document.querySelectorAll("#modeToggle button").forEach(b => b.classList.toggle("active", b === btn));
+  recalc();
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = 0);
+  recalc();
+});
+
+buildRows(armas, "armasBody", "arma");
+buildRows(municao, "muniBody", "muni");
+
+document.addEventListener("input", (e) => {
+  if (e.target.matches('input[type="number"]')) recalc();
+});
+
+recalc();
+</script>
+</body>
+</html>
