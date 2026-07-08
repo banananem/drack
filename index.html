@@ -225,9 +225,16 @@
     margin-top: 6px;
   }
 
-  .reset-btn{
-    display:block;
+  .action-row{
+    display:flex;
+    justify-content:center;
+    gap: 12px;
     margin: 18px auto 0;
+    flex-wrap: wrap;
+  }
+
+  .reset-btn, .save-btn{
+    display:block;
     background: transparent;
     border: 1px solid var(--red);
     color: var(--red);
@@ -241,6 +248,132 @@
     transition: all .15s;
   }
   .reset-btn:hover{ background: var(--red); color: #fff; }
+
+  .save-btn{
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .save-btn:hover{ background: var(--green); color: #0a0a0a; }
+
+  .save-msg{
+    text-align:center;
+    font-size: 11px;
+    color: var(--green);
+    margin-top: 8px;
+    height: 14px;
+  }
+
+  /* Histórico */
+  .history-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .history-total{
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+  .history-total span{ color: var(--amber); font-weight:700; }
+
+  .clear-history-btn{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: 'Drack', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .clear-history-btn:hover{ border-color: var(--red); color: var(--red); }
+
+  .empty-history{
+    text-align:center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+  }
+
+  .history-item{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow:hidden;
+  }
+  .history-item summary{
+    list-style:none;
+    cursor:pointer;
+    padding: 12px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .history-item summary::-webkit-details-marker{ display:none; }
+  .history-item summary:hover{ background: rgba(217,138,43,0.05); }
+
+  .hi-left{ display:flex; flex-direction:column; gap:3px; }
+  .hi-date{ font-size: 12px; color: var(--text); font-weight:500; }
+  .hi-mode{
+    display:inline-block;
+    width: fit-content;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: var(--panel-2);
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+  }
+  .hi-mode.com{ color: var(--green); border-color: var(--green); }
+  .hi-mode.sem{ color: var(--amber); border-color: var(--amber-dim); }
+
+  .hi-right{ display:flex; align-items:center; gap: 14px; }
+  .hi-total{
+    font-family: 'Drack', sans-serif;
+    font-size: 16px;
+    color: var(--amber);
+  }
+  .hi-delete{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .hi-delete:hover{ border-color: var(--red); color: var(--red); }
+
+  .hi-body{
+    padding: 4px 14px 14px;
+    border-top: 1px solid var(--line);
+  }
+  .hi-body table{ margin-top: 8px; }
+  .hi-body thead th{ font-size: 9px; }
+  .hi-body tbody td{ font-size: 12px; padding: 6px 10px; }
+  .hi-subtotals{
+    display:flex;
+    justify-content:flex-end;
+    gap: 18px;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+  .hi-subtotals span.val{ color: var(--text); }
 
   @media (max-width: 560px){
     thead th:nth-child(2), .unit-price{ display:none; }
@@ -265,6 +398,7 @@
   <div class="tabs" id="sectionTabs">
     <button class="tab-btn active" data-tab="armas">Armas</button>
     <button class="tab-btn" data-tab="muni">Munição</button>
+    <button class="tab-btn" data-tab="historico">Histórico</button>
   </div>
 
   <div class="tab-panel active" id="panel-armas">
@@ -295,6 +429,14 @@
     </table>
   </div>
 
+  <div class="tab-panel" id="panel-historico">
+    <div class="history-toolbar">
+      <div class="history-total">Total acumulado salvo: <span id="historyGrandTotal">R$ 0,00</span></div>
+      <button class="clear-history-btn" id="clearHistoryBtn">Limpar histórico</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
   <div class="summary">
     <div class="summary-row"><span>Subtotal armas</span><span class="val" id="sumArmas">R$ 0,00</span></div>
     <div class="summary-row"><span>Subtotal munição</span><span class="val" id="sumMuni">R$ 0,00</span></div>
@@ -302,7 +444,11 @@
     <div class="savings" id="savingsRow"></div>
   </div>
 
-  <button class="reset-btn" id="resetBtn">Zerar quantidades</button>
+  <div class="action-row">
+    <button class="save-btn" id="saveBtn">Salvar cálculo</button>
+    <button class="reset-btn" id="resetBtn">Zerar quantidades</button>
+  </div>
+  <div class="save-msg" id="saveMsg"></div>
 
 </div>
 
@@ -414,6 +560,8 @@ document.getElementById("sectionTabs").addEventListener("click", (e) => {
   document.querySelectorAll("#sectionTabs .tab-btn").forEach(b => b.classList.toggle("active", b === btn));
   document.getElementById("panel-armas").classList.toggle("active", btn.dataset.tab === "armas");
   document.getElementById("panel-muni").classList.toggle("active", btn.dataset.tab === "muni");
+  document.getElementById("panel-historico").classList.toggle("active", btn.dataset.tab === "historico");
+  if (btn.dataset.tab === "historico") renderHistory();
 });
 
 document.getElementById("modeToggle").addEventListener("click", (e) => {
@@ -428,6 +576,171 @@ document.getElementById("resetBtn").addEventListener("click", () => {
   document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = 0);
   recalc();
 });
+
+/* ---------- Histórico (localStorage) ---------- */
+
+const HISTORY_KEY = "drackHistory";
+let storageAvailable = true;
+
+function safeGetHistory(){
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    storageAvailable = false;
+    return [];
+  }
+}
+
+function safeSetHistory(list){
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    return true;
+  } catch (err) {
+    storageAvailable = false;
+    return false;
+  }
+}
+
+function collectCurrentCalc(){
+  const items = [];
+  let sumArmas = 0, sumMuni = 0;
+
+  armas.forEach((item, i) => {
+    const qty = parseFloat(document.getElementById(`arma-qty-${i}`).value) || 0;
+    if (qty > 0) {
+      const price = item[mode];
+      const total = qty * price;
+      sumArmas += total;
+      items.push({ cat: "Armas", name: item.name, qty, price, total });
+    }
+  });
+
+  municao.forEach((item, i) => {
+    const qty = parseFloat(document.getElementById(`muni-qty-${i}`).value) || 0;
+    if (qty > 0) {
+      const price = item[mode];
+      const total = qty * price;
+      sumMuni += total;
+      items.push({ cat: "Munição", name: item.name, qty, price, total });
+    }
+  });
+
+  return { items, sumArmas, sumMuni, sumTotal: sumArmas + sumMuni };
+}
+
+function saveCalculation(){
+  const calc = collectCurrentCalc();
+  const saveMsg = document.getElementById("saveMsg");
+
+  if (calc.items.length === 0) {
+    saveMsg.style.color = "var(--red)";
+    saveMsg.textContent = "Adicione ao menos 1 item antes de salvar.";
+    setTimeout(() => { saveMsg.textContent = ""; }, 2500);
+    return;
+  }
+
+  const record = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    mode,
+    ...calc
+  };
+
+  const history = safeGetHistory();
+  history.unshift(record);
+  const ok = safeSetHistory(history);
+
+  saveMsg.style.color = ok ? "var(--green)" : "var(--red)";
+  saveMsg.textContent = ok
+    ? "Cálculo salvo no histórico!"
+    : "Não foi possível salvar (armazenamento indisponível).";
+  setTimeout(() => { saveMsg.textContent = ""; }, 2500);
+
+  if (document.getElementById("panel-historico").classList.contains("active")) {
+    renderHistory();
+  }
+}
+
+function deleteHistoryItem(id){
+  const history = safeGetHistory().filter(r => r.id !== id);
+  safeSetHistory(history);
+  renderHistory();
+}
+
+function clearHistory(){
+  if (!confirm("Tem certeza que deseja apagar todo o histórico salvo?")) return;
+  safeSetHistory([]);
+  renderHistory();
+}
+
+function formatDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderHistory(){
+  const list = safeGetHistory();
+  const container = document.getElementById("historyList");
+  const grandTotalEl = document.getElementById("historyGrandTotal");
+
+  const grandTotal = list.reduce((acc, r) => acc + r.sumTotal, 0);
+  grandTotalEl.textContent = fmt(grandTotal);
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty-history">${storageAvailable ? "Nenhum cálculo salvo ainda." : "Armazenamento local indisponível neste navegador."}</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(r => {
+    const rowsHtml = r.items.map(it => `
+      <tr>
+        <td class="item-name">${it.name}</td>
+        <td class="unit-price">${it.cat}</td>
+        <td class="qty-cell">${it.qty}</td>
+        <td class="line-total">${fmt(it.total)}</td>
+      </tr>
+    `).join("");
+
+    return `
+      <details class="history-item">
+        <summary>
+          <div class="hi-left">
+            <span class="hi-date">${formatDate(r.date)}</span>
+            <span class="hi-mode ${r.mode}">${r.mode === "com" ? "Com parceria" : "Sem parceria"}</span>
+          </div>
+          <div class="hi-right">
+            <span class="hi-total">${fmt(r.sumTotal)}</span>
+            <button class="hi-delete" data-id="${r.id}">Excluir</button>
+          </div>
+        </summary>
+        <div class="hi-body">
+          <table>
+            <thead>
+              <tr><th>Item</th><th>Categoria</th><th class="num">Qtd</th><th class="num">Subtotal</th></tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+          <div class="hi-subtotals">
+            <span>Armas: <span class="val">${fmt(r.sumArmas)}</span></span>
+            <span>Munição: <span class="val">${fmt(r.sumMuni)}</span></span>
+          </div>
+        </div>
+      </details>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".hi-delete").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      deleteHistoryItem(Number(btn.dataset.id));
+    });
+  });
+}
+
+document.getElementById("saveBtn").addEventListener("click", saveCalculation);
+document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
 
 buildRows(armas, "armasBody", "arma");
 buildRows(municao, "muniBody", "muni");
